@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "titulo": "Cámara Reflex",
+    "desc": "Cámara profesional con lente 18-55mm.",
+    "precio": 99000,
+    "img": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+  },
+  {
+    "id": 2,
+    "titulo": "Lentes de Sol",
+    "desc": "Protección UV400, marco negro mate.",
+    "precio": 25000,
+    "img": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+  },
+  {
+    "id": 3,
+    "titulo": "Audífonos Gamer",
+    "desc": "Sonido envolvente 7.1 y micrófono.",
+    "precio": 45000,
+    "img": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+  },
+  {
+    "id": 4,
+    "titulo": "Zapatillas Running",
+    "desc": "Suela amortiguada para alto impacto.",
+    "precio": 60000,
+    "img": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+  }
+]
