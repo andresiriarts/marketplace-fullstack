@@ -1,24 +1,20 @@
 import { createContext, useState, useEffect } from "react";
 
-// 1. Creación del contexto
 export const MyContext = createContext();
 
-// 2. Creación del Provider
 const MyContextProvider = ({ children }) => {
   const [productos, setProductos] = useState([]);
 
-  // MEJORA 1: Inicializamos el carrito leyendo el LocalStorage (Persistencia)
   const [carrito, setCarrito] = useState(() => {
     const savedCart = localStorage.getItem("carrito");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // MEJORA 1 (Parte B): Guardamos en LocalStorage cada vez que el carrito cambia
+  
   useEffect(() => {
     localStorage.setItem("carrito", JSON.stringify(carrito));
   }, [carrito]);
 
-  // Consumimos el JSON simulado al cargar la página
   useEffect(() => {
     getDatos();
   }, []);
@@ -63,7 +59,6 @@ const MyContextProvider = ({ children }) => {
   };
 
   return (
-    // MEJORA 3: Agregamos increment y decrement al value
     <MyContext.Provider
       value={{
         productos,
