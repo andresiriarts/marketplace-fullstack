@@ -12,7 +12,7 @@ const Perfil = () => {
 
   const verDetalle = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/pedidos/${id}`, {
+      const response = await fetch(`https://marketplace-fullstack.onrender.com/pedidos/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();

@@ -46,7 +46,7 @@ const MyContextProvider = ({ children }) => {
   // --- 3. FUNCIONES: PRODUCTOS (Público) ---
   const getDatos = async () => {
     try {
-      const res = await fetch("http://localhost:3000/posts");
+      const res = await fetch("https://marketplace-fullstack.onrender.com/posts");
       const data = await res.json();
       // Validación para evitar que la app explote si el server falla
       if (Array.isArray(data)) setProductos(data);
@@ -61,7 +61,7 @@ const MyContextProvider = ({ children }) => {
   const getFavoritos = async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/favoritos", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/favoritos", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -74,7 +74,7 @@ const MyContextProvider = ({ children }) => {
   const addFavorito = async (producto) => {
     if (!token) return alert("Inicia sesión para agregar a favoritos ❤️");
     try {
-      const res = await fetch("http://localhost:3000/favoritos", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/favoritos", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json", 
@@ -93,7 +93,7 @@ const MyContextProvider = ({ children }) => {
 
   const removeFavorito = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3000/favoritos/${id}`, {
+      const res = await fetch(`https://marketplace-fullstack.onrender.com/favoritos/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -131,7 +131,7 @@ const MyContextProvider = ({ children }) => {
   const getPedidos = async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/pedidos", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/pedidos", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -147,7 +147,7 @@ const MyContextProvider = ({ children }) => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:3000/pedidos", {
+      const response = await fetch("https://marketplace-fullstack.onrender.com/pedidos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +170,7 @@ const MyContextProvider = ({ children }) => {
   // --- 6. FUNCIONES: ADMIN (CRUD) ⚙️ ---
   const crearPost = async (nuevoPost) => {
     try {
-      const res = await fetch("http://localhost:3000/posts", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(nuevoPost),
@@ -185,7 +185,7 @@ const MyContextProvider = ({ children }) => {
 
   const editarPost = async (id, postEditado) => {
     try {
-      const res = await fetch(`http://localhost:3000/posts/${id}`, {
+      const res = await fetch(`https://marketplace-fullstack.onrender.com/posts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(postEditado),
@@ -202,7 +202,7 @@ const MyContextProvider = ({ children }) => {
   const eliminarPost = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminarlo?")) return;
     try {
-      const res = await fetch(`http://localhost:3000/posts/${id}`, {
+      const res = await fetch(`https://marketplace-fullstack.onrender.com/posts/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -217,7 +217,7 @@ const MyContextProvider = ({ children }) => {
   const getUserProfile = async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/usuarios", { 
+      const res = await fetch("https://marketplace-fullstack.onrender.com/usuarios", { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       const data = await res.json();
@@ -228,7 +228,7 @@ const MyContextProvider = ({ children }) => {
 
   const registerUser = async (u) => {
     try {
-      const res = await fetch("http://localhost:3000/usuarios", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/usuarios", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u)
       });
       if (res.ok) { alert("Registrado con éxito"); navigate("/login"); } 
@@ -238,7 +238,7 @@ const MyContextProvider = ({ children }) => {
 
   const loginUser = async (u) => {
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch("https://marketplace-fullstack.onrender.com/login", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u)
       });
       const data = await res.json();
