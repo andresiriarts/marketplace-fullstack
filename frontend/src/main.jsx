@@ -6,15 +6,14 @@ import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-// IMPORTAMOS EL CONTEXTO
-import MyContextProvider from "./context/MyContext.jsx";
+import MyProvider from "./context/MyContext.jsx";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MyContextProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <MyProvider>
         <App />
-      </BrowserRouter>
-    </MyContextProvider>
+      </MyProvider>
+    </BrowserRouter>
   </StrictMode>,
 )

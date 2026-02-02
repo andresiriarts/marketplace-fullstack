@@ -2,41 +2,48 @@ import { useContext } from "react";
 import { MyContext } from "../context/MyContext";
 
 const Carrito = () => {
-  const { carrito, increment, decrement } = useContext(MyContext);
-  const total = carrito.reduce((acc, item) => acc + (item.precio * item.count), 0);
+  const { carrito, increment, decrement, removeProduct, total, pagarCompra } = useContext(MyContext);
 
   return (
     <div className="container mt-5">
-      <div className="p-5 bg-light border rounded-3">
-        <h3 className="mb-4">Detalles del pedido:</h3>
-
+      <div className="card shadow-sm p-4">
+        <h2 className="mb-4 text-center">Detalle del Pedido</h2>
+        
         {carrito.length === 0 ? (
-          <div className="alert alert-warning text-center">
-            Tu carrito está vacío 😔
+          <div className="text-center py-5">
+            <h4>El carrito está vacío 🛒</h4>
+            <p className="text-muted">Agrega productos para comenzar.</p>
           </div>
         ) : (
-          <div className="bg-white p-3 rounded shadow-sm">
-            {carrito.map((item, index) => (
-              <div key={index} className="d-flex justify-content-between align-items-center py-3 border-bottom">
-                <div className="d-flex align-items-center">
-                  <img src={item.img} alt={item.titulo} width="50" className="me-3 rounded" />
-                  <span className="text-capitalize fw-bold">{item.titulo}</span>
-                </div>
-                <div className="d-flex align-items-center">
-                  <span className="text-success fw-bold me-3">
-                    ${(item.precio * item.count).toLocaleString()}
-                  </span>
-                  <button className="btn btn-danger btn-sm me-2" onClick={() => decrement(item.id)}>-</button>
-                  <span className="fw-bold mx-2">{item.count}</span>
-                  <button className="btn btn-primary btn-sm ms-2" onClick={() => increment(item.id)}>+</button>
-                </div>
+          <>
+            <ul className="list-group list-group-flush">
+              {carrito.map((producto, index) => (
+                <li key={index} className="list-group-item d-flex justify-content-between align-items-center py-3">
+                  <div className="d-flex align-items-center gap-3">
+                    <img src={producto.img} alt={producto.titulo} style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }} />
+                    <div>
+                      <h6 className="mb-0 text-capitalize">{producto.titulo}</h6>
+                      <small className="text-muted">${producto.precio.toLocaleString("es-CL")}</small>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => decrement(producto.id)}>-</button>
+                    <span className="fw-bold mx-2">{producto.count}</span>
+                    <button className="btn btn-sm btn-outline-primary" onClick={() => increment(producto.id)}>+</button>
+                    <button className="btn btn-danger btn-sm ms-3" onClick={() => removeProduct(producto.id)}>🗑️</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 border-top pt-3">
+              <h3 className="text-end mb-4">Total: ${total.toLocaleString("es-CL")}</h3>
+              <div className="d-grid gap-2 col-md-6 mx-auto">
+                <button className="btn btn-dark btn-lg" onClick={pagarCompra}>
+                  Ir a Pagar
+                </button>
               </div>
-            ))}
-            <h2 className="mt-4 text-end">Total: ${total.toLocaleString()}</h2>
-            <div className="text-end">
-              <button className="btn btn-success mt-3 fw-bold">Ir a Pagar</button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -3,6 +3,9 @@ import cors from 'cors';
 import 'dotenv/config';
 import { pool } from './src/config/db.js';
 import usuariosRoutes from './src/routes/usuariosRoutes.js';
+import postsRoutes from './src/routes/postsRoutes.js';
+import pedidosRoutes from './src/routes/pedidosRoutes.js';
+import favoritosRoutes from './src/routes/favoritosRoutes.js'
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,10 +16,14 @@ app.use(cors());
 
 // Usar las rutas
 app.use(usuariosRoutes);
+app.use(postsRoutes);
+app.use(pedidosRoutes);
+app.use(favoritosRoutes);
+
 
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🔥 Servidor encendido en http://localhost:${PORT}`);
 });
 
-export default app; // Exportamos para Testing
+export default app;
