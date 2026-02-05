@@ -1,109 +1,106 @@
 import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2'; // Importamos las alertas
 
 export const MyContext = createContext();
 
+// 🌍 URL DEL BACKEND (Render)
+const API_URL = "https://marketplace-fullstack.onrender.com";
+
 const MyContextProvider = ({ children }) => {
   const navigate = useNavigate();
+
+  // --- CONFIGURACIÓN DEL TOAST (Notificación pequeña en la esquina) ---
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
 
   // --- 1. ESTADOS GLOBALES ---
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [user, setUser] = useState(null);
   const [productos, setProductos] = useState([]);
   const [pedidos, setPedidos] = useState([]);
-  const [favoritos, setFavoritos] = useState([]); // ❤️ Estado para Favoritos
+  const [favoritos, setFavoritos] = useState([]);
   
   const [carrito, setCarrito] = useState(() => {
     const savedCart = localStorage.getItem("carrito");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Calculamos el total del carrito dinámicamente
   const total = carrito.reduce((acc, item) => acc + (item.precio * item.count), 0);
 
-  // --- 2. EFECTOS (Ciclo de Vida) ---
-  
-  // Persistir carrito en LocalStorage
+  // --- 2. EFECTOS ---
+  useEffect(() => { localStorage.setItem("carrito", JSON.stringify(carrito)); }, [carrito]);
+  useEffect(() => { getDatos(); }, []);
   useEffect(() => { 
-    localStorage.setItem("carrito", JSON.stringify(carrito)); 
-  }, [carrito]);
-
-  // Cargar productos al iniciar la app
-  useEffect(() => { 
-    getDatos(); 
-  }, []);
-
-  // Si hay token, cargamos perfil, pedidos y favoritos
-  useEffect(() => {
-    if (token) {
-      getUserProfile();
-      getPedidos();
-      getFavoritos(); // <--- Cargar favoritos al loguearse
-    }
+    if (token) { 
+      getUserProfile(); 
+      getPedidos(); 
+      getFavoritos(); 
+    } 
   }, [token]);
 
-
-  // --- 3. FUNCIONES: PRODUCTOS (Público) ---
+  // --- 3. FUNCIONES: PRODUCTOS ---
   const getDatos = async () => {
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/posts");
+      const res = await fetch(`${API_URL}/posts`);
       const data = await res.json();
-      // Validación para evitar que la app explote si el server falla
       if (Array.isArray(data)) setProductos(data);
-      else setProductos([]);
-    } catch (error) {
-      console.error("Error cargando posts:", error);
-      setProductos([]);
-    }
+    } catch (error) { console.error("Error cargando posts:", error); }
   };
 
-  // --- 4. FUNCIONES: FAVORITOS ❤️ (Privado) ---
+  // --- 4. FUNCIONES: FAVORITOS ❤️ ---
   const getFavoritos = async () => {
     if (!token) return;
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/favoritos", {
+      const res = await fetch(`${API_URL}/favoritos`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setFavoritos(data);
-    } catch (error) {
-      console.error("Error obteniendo favoritos:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const addFavorito = async (producto) => {
-    if (!token) return alert("Inicia sesión para agregar a favoritos ❤️");
+    if (!token) return Swal.fire("¡Atención!", "Inicia sesión para agregar a favoritos ❤️", "warning");
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/favoritos", {
+      const res = await fetch(`${API_URL}/favoritos`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ post_id: producto.id }) 
       });
 
       if (res.ok) {
         setFavoritos([...favoritos, producto]); 
+        // ALERTA TOAST
+        Toast.fire({ icon: "success", title: "Agregado a favoritos ❤️" });
+      } else {
+        // Si ya existe (status 409 u otro), avisamos o no hacemos nada
+        const data = await res.json();
+        Toast.fire({ icon: "info", title: data.message });
       }
-    } catch (error) {
-      console.error("Error agregando favorito:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const removeFavorito = async (id) => {
     try {
-      const res = await fetch(`https://marketplace-fullstack.onrender.com/favoritos/${id}`, {
+      const res = await fetch(`${API_URL}/favoritos/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (res.ok) {
         setFavoritos(favoritos.filter(f => f.id !== id)); 
+        Toast.fire({ icon: "success", title: "Eliminado de favoritos 💔" });
       }
-    } catch (error) {
-      console.error("Error eliminando favorito:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   // --- 5. FUNCIONES: CARRITO Y PEDIDOS 🛒 ---
@@ -116,22 +113,18 @@ const MyContextProvider = ({ children }) => {
     } else { 
       setCarrito([...carrito, { ...p, count: 1 }]); 
     }
+    // ALERTA TOAST
+    Toast.fire({ icon: "success", title: "Producto agregado 🛒" });
   };
 
   const increment = (id) => setCarrito(carrito.map(x => x.id === id ? { ...x, count: x.count + 1 } : x));
-  
-  const decrement = (id) => setCarrito(
-    carrito.map(x => x.id === id ? { ...x, count: x.count - 1 } : x)
-           .filter(x => x.count > 0)
-  );
-  
+  const decrement = (id) => setCarrito(carrito.map(x => x.id === id ? { ...x, count: x.count - 1 } : x).filter(x => x.count > 0));
   const removeProduct = (id) => setCarrito(carrito.filter(x => x.id !== id));
 
-  // Obtener historial de pedidos
   const getPedidos = async () => {
     if (!token) return;
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/pedidos", {
+      const res = await fetch(`${API_URL}/pedidos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -139,15 +132,14 @@ const MyContextProvider = ({ children }) => {
     } catch (error) { console.error(error); }
   };
 
-  // Pagar y guardar en BD
   const pagarCompra = async () => {
     if (!token) {
-      alert("⚠️ Inicia sesión para finalizar");
+      Swal.fire("Inicia Sesión", "Debes estar logueado para pagar", "info");
       navigate("/login");
       return;
     }
     try {
-      const response = await fetch("https://marketplace-fullstack.onrender.com/pedidos", {
+      const response = await fetch(`${API_URL}/pedidos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,12 +149,20 @@ const MyContextProvider = ({ children }) => {
       });
 
       if (response.ok) {
-        alert("¡Compra realizada con éxito! 🎉");
-        setCarrito([]);
-        getPedidos();
-        navigate("/perfil");
+        setCarrito([]); 
+        getPedidos();   
+        
+        // ALERTA MODAL DE ÉXITO
+        Swal.fire({
+          title: "¡Compra Exitosa!",
+          text: "Tu pedido ha sido procesado correctamente 📦",
+          icon: "success",
+          confirmButtonText: "Ver mis pedidos"
+        }).then(() => {
+          navigate("/perfil");
+        });
       } else {
-        alert("Error al procesar el pago");
+        Swal.fire("Error", "No se pudo procesar el pago", "error");
       }
     } catch (error) { console.error(error); }
   };
@@ -170,13 +170,13 @@ const MyContextProvider = ({ children }) => {
   // --- 6. FUNCIONES: ADMIN (CRUD) ⚙️ ---
   const crearPost = async (nuevoPost) => {
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/posts", {
+      const res = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(nuevoPost),
       });
       if (res.ok) { 
-        alert("Producto creado 🎉"); 
+        Swal.fire("Creado", "Producto publicado con éxito", "success");
         getDatos(); 
         navigate("/"); 
       }
@@ -185,13 +185,13 @@ const MyContextProvider = ({ children }) => {
 
   const editarPost = async (id, postEditado) => {
     try {
-      const res = await fetch(`https://marketplace-fullstack.onrender.com/posts/${id}`, {
+      const res = await fetch(`${API_URL}/posts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(postEditado),
       });
       if (res.ok) {
-        alert("Actualizado ✅");
+        Swal.fire("Actualizado", "Producto editado correctamente", "success");
         const data = await res.json();
         setProductos(productos.map(p => p.id === id ? data : p));
         navigate("/mis-publicaciones");
@@ -200,24 +200,36 @@ const MyContextProvider = ({ children }) => {
   };
 
   const eliminarPost = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminarlo?")) return;
-    try {
-      const res = await fetch(`https://marketplace-fullstack.onrender.com/posts/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setProductos(productos.filter(p => p.id !== id));
-        alert("Eliminado 🗑️");
-      }
-    } catch (e) { console.error(e); }
+    // Confirmación con SweetAlert
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "No podrás revertir esto",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminarlo"
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`${API_URL}/posts/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          setProductos(productos.filter(p => p.id !== id));
+          Swal.fire("Eliminado", "El producto ha sido eliminado.", "success");
+        }
+      } catch (e) { console.error(e); }
+    }
   };
 
   // --- 7. FUNCIONES: AUTH 🔐 ---
   const getUserProfile = async () => {
     if (!token) return;
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/usuarios", { 
+      const res = await fetch(`${API_URL}/usuarios`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       const data = await res.json();
@@ -228,25 +240,33 @@ const MyContextProvider = ({ children }) => {
 
   const registerUser = async (u) => {
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/usuarios", {
+      const res = await fetch(`${API_URL}/usuarios`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u)
       });
-      if (res.ok) { alert("Registrado con éxito"); navigate("/login"); } 
-      else alert("Error al registrar");
+      if (res.ok) { 
+        Swal.fire("¡Bienvenido!", "Usuario registrado con éxito", "success");
+        navigate("/login"); 
+      } else {
+        const errorData = await res.json();
+        Swal.fire("Error", errorData.message || "Error al registrar", "error");
+      }
     } catch (e) { console.error(e); }
   };
 
   const loginUser = async (u) => {
     try {
-      const res = await fetch("https://marketplace-fullstack.onrender.com/login", {
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u)
       });
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("token", data.token);
         setToken(data.token);
+        Toast.fire({ icon: "success", title: "¡Bienvenido de nuevo!" });
         navigate("/perfil");
-      } else alert(data.message);
+      } else {
+        Swal.fire("Error", data.message || "Credenciales incorrectas", "error");
+      }
     } catch (e) { console.error(e); }
   };
 
@@ -256,24 +276,16 @@ const MyContextProvider = ({ children }) => {
     setUser(null);
     setPedidos([]);
     setFavoritos([]);
+    Toast.fire({ icon: "info", title: "Has cerrado sesión" });
     navigate("/");
   };
 
   return (
     <MyContext.Provider value={{
-      // Estados
       token, user, productos, carrito, total, pedidos, favoritos,
-      
-      // Auth
       registerUser, loginUser, logout,
-      
-      // Carrito
       addToCart, increment, decrement, removeProduct, pagarCompra,
-      
-      // Admin
       crearPost, editarPost, eliminarPost,
-
-      // Favoritos
       addFavorito, removeFavorito
     }}>
       {children}

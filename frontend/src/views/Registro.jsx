@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react';
 import { MyContext } from '../context/MyContext';
+import Swal from 'sweetalert2';
 
 const Registro = () => {
   const { registerUser } = useContext(MyContext);
@@ -8,7 +9,7 @@ const Registro = () => {
     nombre: "",
     email: "",
     password: "",
-    confirmPassword: "", // 🔥 Nuevo campo en el estado
+    confirmPassword: "",
     rol: "usuario"
   });
 
@@ -20,18 +21,25 @@ const Registro = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // 1. Validar que no haya campos vacíos
+    // Validación 1: Campos vacíos
     if (!usuario.nombre || !usuario.email || !usuario.password || !usuario.confirmPassword) {
-      return alert("Por favor, completa todos los campos ⚠️");
+      return Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor, completa todos los campos del formulario."
+      });
     }
 
-    // 2. 🔥 VALIDACIÓN CLAVE: Comparar contraseñas
+    // Validación 2: Contraseñas
     if (usuario.password !== usuario.confirmPassword) {
-      return alert("Las contraseñas no coinciden ❌");
+      return Swal.fire({
+        icon: "error",
+        title: "Error de contraseña",
+        text: "Las contraseñas no coinciden."
+      });
     }
 
     const { confirmPassword, ...nuevoUsuario } = usuario;
-
     registerUser(nuevoUsuario);
   };
 
@@ -43,7 +51,6 @@ const Registro = () => {
             <h2 className="text-center mb-4">Crear Cuenta</h2>
             <form onSubmit={handleSubmit}>
 
-              {/* Nombre */}
               <div className="mb-3">
                 <label className="form-label">Nombre</label>
                 <input
@@ -56,7 +63,6 @@ const Registro = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="mb-3">
                 <label className="form-label">Email</label>
                 <input
@@ -69,7 +75,6 @@ const Registro = () => {
                 />
               </div>
 
-              {/* Contraseña */}
               <div className="mb-3">
                 <label className="form-label">Contraseña</label>
                 <input
@@ -82,17 +87,15 @@ const Registro = () => {
                 />
               </div>
 
-              {/* 🔥 NUEVO CAMPO: CONFIRMAR CONTRASEÑA 🔥 */}
               <div className="mb-3">
                 <label className="form-label">Confirmar Contraseña</label>
                 <input
                   type="password"
-                  id="confirmPassword" // Coincide con el estado
+                  id="confirmPassword"
                   className="form-control"
                   placeholder="Repite tu contraseña"
                   value={usuario.confirmPassword}
                   onChange={handleInput}
-                  // Visualmente mostramos rojo si no coinciden y ya escribió algo
                   style={{
                     borderColor: usuario.confirmPassword && usuario.password !== usuario.confirmPassword ? 'red' : ''
                   }}
@@ -102,7 +105,6 @@ const Registro = () => {
                 )}
               </div>
 
-              {/* Selección de Rol */}
               <div className="mb-3">
                 <label className="form-label">Rol de Usuario</label>
                 <select
